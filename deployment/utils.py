@@ -209,13 +209,21 @@ def sample_nodes(
     return result
 
 
-def _split_into_sorted_pairs(lst) -> List[List[str]]:
-    """Splits a list into sorted pairs."""
+def _split_into_sorted_groups(lst) -> List[List[str]]:
+    """
+    Splits a list of staking providers into sorted pairs.
+    Last element is a triplet when odd number of elements.
+    """
+    triplet = []
     if len(lst) % 2 != 0:
-        # TODO: Use a group of 3 instead of sampling a node twice
-        lst.append(lst[-2])  # Use the second-to-last element to fill
+        triplet = sorted([lst.pop(), lst.pop(), lst.pop()])
+
     it = iter(lst)
-    return [sorted(list(pair)) for pair in zip_longest(it, it)]
+    groups = [sorted(list(pair)) for pair in zip_longest(it, it)]
+    if (triplet):
+        groups.append(triplet)
+
+    return groups
 
 
 def get_heartbeat_cohorts(taco_application) -> List[List[str]]:
@@ -231,6 +239,6 @@ def get_heartbeat_cohorts(taco_application) -> List[List[str]]:
         staking_provider_authorized_tokens = to_int(info[20:32])
         staking_providers[staking_provider_address] = staking_provider_authorized_tokens
 
-    staking_providers_info_pairs = _split_into_sorted_pairs(list(staking_providers))
+    staking_providers_info_pairs = _split_into_sorted_groups(list(staking_providers))
     return staking_providers_info_pairs
 
